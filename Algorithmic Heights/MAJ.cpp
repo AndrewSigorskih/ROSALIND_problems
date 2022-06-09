@@ -67,11 +67,11 @@ void printMajority(vector<int>& a)
 int main()
 {
     ifstream ist{"rosalind_maj.txt"};
-	if (!ist) 
-	{
-		cout << "Cannot open input file!\n";
-		exit(1);
-	}
+    if (!ist) 
+    {
+	cout << "Cannot open input file!\n";
+	exit(1);
+    }
 
     int k, n;
     ist >> k >> n;
