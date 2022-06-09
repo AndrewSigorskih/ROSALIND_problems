@@ -1,0 +1,3 @@
+Just use the online ClustalW version: https://www.genome.jp/tools-bin/clustalw
+Then download the guide tree *.dnd file and visualize like an ordinary newick
+(e.g. http://etetoolkit.org/treeview/). Leaf with the longest brlen is the answer.
