@@ -1,4 +1,5 @@
-masses = { 'A' : 71.03711,
+masses = { 
+        'A' : 71.03711,
         'C' : 103.00919,
         'D' : 115.02694,
         'E': 129.04259,
@@ -17,10 +18,11 @@ masses = { 'A' : 71.03711,
         'T' : 101.04768,
         'V' : 99.06841,
         'W' : 186.07931,
-        'Y' : 163.06333 }
+        'Y' : 163.06333 
+        }
 with open('rosalind_prtm.txt') as infile:
     prot = infile.readline().strip('\n')
 tot_mass = 0
 for residue in prot:
     tot_mass += masses[residue]
-print("%.3f" % tot_mass)
+print(f"{tot_mass:.3f}")
