@@ -62,11 +62,11 @@ public:
 int main()
 {
     std::ifstream ist{INFILENAME};
-	if (!ist) 
-	{
-		std::cout << "Cannot open input file!\n";
-		exit(1);
-	}
+    if (!ist) 
+    {
+	std::cout << "Cannot open input file!\n";
+	exit(1);
+    }
 
     double W = 0;
     int x, y;
@@ -81,6 +81,12 @@ int main()
     }
 
     std::ofstream ost{OUTFILENAME};
+    if (!ost) 
+    {
+	std::cout << "Cannot open output file!\n";
+	exit(1);
+    }
+
     for (int i=0; i < x; ++i)
     {
         ost << graph.getNeiDegSum(i);
