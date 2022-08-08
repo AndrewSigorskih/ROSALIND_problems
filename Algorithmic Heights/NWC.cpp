@@ -96,9 +96,12 @@ int Graph::hasNWC(int s)
 
 int check_graph(std::ifstream& ist)
 {
+    // here we will add blank vertex
+    // that connects to all other with 
+    // pseudo-edges of zero cost
     int x, y;
     ist >> x >> y;
-    Graph graph(x);
+    Graph graph(x + 1); // one more vertex 
     for (int i = 0; i < y; ++i)
     {
         int x, y, w;
@@ -106,13 +109,13 @@ int check_graph(std::ifstream& ist)
         graph.addEdge(x-1, y-1, w);
     }
 
-    for (int i = 0; i < graph.vNum(); ++i)
+    // add pseudo-edges
+    for (int i = 0; i < graph.vNum()-1; ++i)
     {
-        if (graph.hasNWC(i) ==  1) 
-            return 1;
-        graph.resetPath();
+        graph.addEdge(graph.vNum()-1, i, 0);
     }
-    return -1;
+    
+    return graph.hasNWC(graph.vNum()-1);
 }
 
 int main()
