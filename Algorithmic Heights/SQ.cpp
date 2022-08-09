@@ -79,12 +79,12 @@ int Graph::checkCycles(int n)
     }
     return -1;
 }
-// https://www.geeksforgeeks.org/cycles-of-length-n-in-an-undirected-and-connected-graph/#:~:text=Given%20an%20undirected%20and%20connected,all%20such%20cycles%20that%20exist.
+
 int check_graph(std::ifstream& ist)
 {
     uint x, y;
     ist >> x >> y;
-    Graph graph(x); // one more vertex 
+    Graph graph(x);
     for (int i = 0; i < y; ++i)
     {
         uint x, y;
