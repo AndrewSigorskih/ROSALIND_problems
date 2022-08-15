@@ -2,22 +2,24 @@
 #include <fstream>
 #include <vector>
 #include <list>
-#include <set> // imitating proirity queue
-#include <climits> // UINT_MAX
-
+#include <climits>
+#include <queue>
+using std::list;
+using std::vector;
+using std::priority_queue;
 const char* INFILENAME = "rosalind_dij.txt";
 const char* OUTFILENAME = "out.txt";
-bool isDirected = true;
-
+const bool isDirected = true;
+// https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-using-priority_queue-stl/
 struct adjNode
 {
-    unsigned name;
-    unsigned weight; // dijkstra operates positive edge weights only
+    uint name;
+    uint weight; // dijkstra operates positive edge weights only
 };
-using adjList = std::vector<std::list<adjNode>>;
+using adjList = vector<list<adjNode>>;
 
-bool operator<(const adjNode& a, const adjNode& b)
-{ // custom comparator for usage in set
+bool Compare(const adjNode& a, const adjNode& b)
+{
     if (a.weight != b.weight)
         return (a.weight < b.weight);
     else
@@ -26,78 +28,79 @@ bool operator<(const adjNode& a, const adjNode& b)
 
 class Graph
 {
-    unsigned edgesNum = 0;
+    uint V, E;
     adjList nodes;
-    std::vector<unsigned> path;
-
+    vector<uint> path;
 public:
-    unsigned vNum() const { return nodes.size(); }
-    unsigned eNum() const { return this->edgesNum; }
-
-    Graph(unsigned verticesNum) 
-    {
-        this->nodes = adjList(verticesNum);
-        this->path = std::vector<unsigned>(verticesNum, UINT_MAX);
-    }
-
-    void addEdge(unsigned start, unsigned end, unsigned weight)
-    {
-        adjNode node {end, weight};
-        this->nodes[start].push_back(node);
-        ++(this->edgesNum);
-        if (!isDirected)
-        {
-            adjNode node {start, weight};
-            this->nodes[end].push_back(node);
-        }
-    }
-
-    void Dijkstra(unsigned s); 
-    void printPath(std::ofstream& ofs);
+    Graph(uint vNum) : V(vNum), E(0), nodes(vNum),
+                        path(vNum, UINT_MAX)
+    {  }
+    uint vNum() const { return V; }
+    uint eNum() const { return E; }
+    uint pathTo(uint v) const { return path[v]; }
+    void initPath() { std::fill(path.begin(), path.end(), UINT_MAX); }
+    void addEdge(uint, uint, uint);
+    void Dijkstra(uint); 
 };
 
-void Graph::Dijkstra(unsigned s)
+void Graph::addEdge(uint start, uint end, uint weight)
 {
-    //init
-    this->path[s] = 0;
-    std::set<adjNode> queue;
-    queue.insert(adjNode{s, 0});
-
-    while (!queue.empty())
+    ++E;
+    adjNode node {end, weight};
+    nodes[start].push_back(node);
+    if (!isDirected)
     {
-        adjNode tmp = *(queue.begin());
-        queue.erase(queue.begin());
-        unsigned u = tmp.name;
-        //iterate all neighbours
-        for (auto it = this->nodes[u].begin(); it != this->nodes[u].end(); ++it)
-        {
-            unsigned v, weight;
-            v = (*it).name;
-            weight = (*it).weight;
+        adjNode node {start, weight};
+        nodes[end].push_back(node);
+    }
+}
 
-            if (this->path[v] > this->path[u] + weight)
+void Graph::Dijkstra(uint s)
+{   
+    //initPath();
+    priority_queue<adjNode, vector<adjNode>, decltype(&Compare)> queue(Compare);
+    queue.push(adjNode{s, 0});
+    path[s] = 0;
+    while(!queue.empty())
+    {
+        uint u = queue.top().name;
+        queue.pop();
+        for (auto v: nodes[u])
+        {
+            if (path[v.name] > path[u] + v.weight)
             {
-                if (this->path[v] != UINT_MAX)
-                    queue.erase(queue.find(adjNode{v, this->path[v]}));
-                this->path[v] = this->path[u] + weight;
-                queue.insert(adjNode{v, this->path[v]});
+                path[v.name] = path[u] + v.weight;
+                queue.push(adjNode{v.name, path[v.name]});
             }
         }
     }
-    
 }
 
-void Graph::printPath(std::ofstream& ofs)
+void check_graph(std::ifstream& ist, std::ofstream& ost)
 {
-    for (int i = 0; i < this->vNum(); ++i)
+    uint x, y;
+    ist >> x >> y;
+    Graph graph(x);
+
+    for (int i = 0; i < y; ++i)
     {
-        auto val = this->path[i];
-        if (val == UINT_MAX) { ofs << -1; }
-        else { ofs << val; }
-        if (i < (this->vNum()-1))
-            ofs << " ";
+        uint x, y, w;
+        ist >> x >> y >> w;
+        graph.addEdge(x-1, y-1, w);
+
     }
-    ofs << '\n';
+    graph.Dijkstra(0);
+    for (uint i = 0; i < graph.vNum(); ++i)
+    {
+        uint dist = graph.pathTo(i);
+        if (dist < UINT_MAX)
+            ost << dist;
+        else
+            ost << -1;
+        if (i < graph.vNum() -1) 
+            ost << " ";
+    }
+    ost << '\n';
 }
 
 int main()
@@ -109,27 +112,12 @@ int main()
         exit(1);
     }
 
-    unsigned x, y;
-    
-    ist >> x >> y;
-    Graph graph(x);
-    for (int i=0; i < y; ++i)
-    {
-        unsigned x, y, w;
-        ist >> x >> y >> w;
-        graph.addEdge(x-1, y-1, w);
-    }
-
-    graph.Dijkstra(0);
-
     std::ofstream ost{OUTFILENAME};
     if (!ost) 
     {
         std::cout << "Cannot open output file!\n";
         exit(1);
     }
-
-    graph.printPath(ost);
-
+    check_graph(ist, ost);
     return 0;
 }
