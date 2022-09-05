@@ -1,83 +1,93 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <sstream>
 #include <iterator>
-#include <map>
+#include <limits>
+#include <vector>
+#include <unordered_map>
 
-using namespace std;
+using std::string;
+using std::vector;
+long int STR_MAX = std::numeric_limits<std::streamsize>::max();
+using Matrix = std::unordered_map<string, std::unordered_map<string, double>>;
 
-//get line and split by any number of whitespaces
-vector<string> parseLine(std::istream& str)
+class HMM
 {
-	vector<std::string>   result;
-    string                buf;
-    getline(str, buf);
+    string Path;
+    vector<string> alphabet;
+    Matrix Transition;
 
-	istringstream iss(buf);
-    copy(istream_iterator<string>(iss), istream_iterator<string>(),
-              back_inserter(result));
+    vector<string> parseLine(std::istream& ist);
+    void readMatrix(std::istream& ist);
 
+public:
+    HMM(std::istream& ist);
+    double calcPathProb();
+};
+
+HMM::HMM(std::istream& ist)
+{
+    std::getline(ist, Path);
+    ist.ignore(STR_MAX, '\n'); // ignoring "------"
+    alphabet = parseLine(ist);
+    ist.ignore(STR_MAX, '\n'); // ignoring "------"
+    readMatrix(ist);
+}
+
+vector<string> HMM::parseLine(std::istream& ist)
+{
+    string buf;
+    vector<string> result;
+    //ist >> buf;
+    std::getline(ist, buf);
+    std::istringstream iss(buf);
+    std::copy(std::istream_iterator<string>(iss), 
+              std::istream_iterator<string>(),
+              std::back_inserter(result));
 	return result;
-} 
-/*
-void printVector(vector<string>& vec)
-{
-	for (string s: vec)
-    	cout << s << " ";
-	cout << "\n";
-}
-*/
-map<string, map<string, double>> readMatrix(vector<string>& alphabet,
-									vector<string>& header, std::istream& ist)
-{
-	map<string, map<string, double>> m;
-	for (int i = 0; i < alphabet.size(); i++)
-	{
-		vector<string> buf = parseLine(ist);
-
-		for (int j = 1; j <= alphabet.size(); j++)
-		{
-			m[buf[0]][header[j-1]] = double{ stod(buf[j]) };
-		}
-		buf.clear();
-	}
-	return m;
 }
 
-double calcPathProb(string& path, map<string, map<string, double>> m, 
-					int size)
+void HMM::readMatrix(std::istream& ist)
 {
-	double prob = 1.0 / size;
-	for (int i = 1; i < path.size(); i++)
-	{
-		prob *= m[path.substr(i-1,1)][path.substr(i,1)];
-	}
-	return prob;
+    vector<string> header = parseLine(ist);
+    for (int i = 0; i < header.size(); ++i)
+    {
+        vector<string> buf = parseLine(ist);
+        for (int j = 1; j <= header.size(); ++j)
+        {
+            Transition[buf[0]][header[j-1]] = stod(buf[j]);
+        }
+        buf.clear();
+    }
+}
+
+double HMM::calcPathProb()
+{
+    double prob = 1.0 / alphabet.size();
+    for (int i = 1; i < Path.size(); ++i)
+    {
+        prob *= Transition[Path.substr(i-1,1)][Path.substr(i,1)];
+    }
+    return prob;
 }
 
 int main()
 {
-	ifstream ist{"rosalind_ba10a.txt"};
-	if (!ist) 
-	{
-		cout << "Cannot open input file!\n";
-		exit(1);
-	}
+    std::ifstream ist{"rosalind_ba10a.txt"};
+    if (!ist) 
+    {
+        std::cout << "Cannot open input file!\n";
+        exit(1);
+    }
+    std::ofstream ost{"out.txt"};
+    if (!ost) 
+    {
+        std::cout << "Cannot open output file!\n";
+        exit(1);
+    }
+    HMM model(ist);
+    ost.precision(12);
+    ost << model.calcPathProb() << '\n';
 
-	string path;
-	getline(ist, path);
-
-	ist.ignore(2048, '\n');
-
-	vector<string> alphabet = parseLine(ist);
-
-	ist.ignore(2048, '\n');
-
-	vector<string> header = parseLine(ist);
-	map<string, map<string, double>> m = readMatrix(alphabet, header, ist);
-
-	cout.precision(12);
-	cout << calcPathProb(path, m, alphabet.size()) <<"\n";
-	return 0;
+    return 0;
 }
