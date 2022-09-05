@@ -1,93 +1,101 @@
 #include <iostream>
 #include <fstream>
-#include <limits>
-#include <vector>
 #include <sstream>
 #include <iterator>
-#include <map>
+#include <limits>
+#include <vector>
+#include <unordered_map>
 
-using namespace std;
+using std::string;
+using std::vector;
+const char* INFILENAME = "rosalind_ba10b.txt";
+const char* OUTFILENAME = "out.txt";
+long int STR_MAX = std::numeric_limits<std::streamsize>::max();
+using Matrix = std::unordered_map<string, std::unordered_map<string, double>>;
 
-//get line and split by any number of whitespaces
-vector<string> parseLine(std::istream& str)
+class HMM
 {
-	vector<std::string>   result;
-    string                buf;
-    getline(str, buf);
+    string String;
+    string Path;
+    vector<string> alphabet;
+    vector<string> states;
+    Matrix Emission;
 
-	istringstream iss(buf);
-    copy(istream_iterator<string>(iss), istream_iterator<string>(),
-              back_inserter(result));
+    vector<string> parseLine(std::istream& ist);
+    void readMatrix(std::istream& ist);
 
+public:
+    HMM(std::istream& ist);
+    double calcPathProb();
+};
+
+HMM::HMM(std::istream& ist)
+{
+    std::getline(ist, String);
+    ist.ignore(STR_MAX, '\n'); // ignoring "------"
+    alphabet = parseLine(ist);
+    ist.ignore(STR_MAX, '\n');
+    std::getline(ist, Path);
+    ist.ignore(STR_MAX, '\n'); 
+    states = parseLine(ist);
+    ist.ignore(STR_MAX, '\n'); 
+    readMatrix(ist);
+}
+
+vector<string> HMM::parseLine(std::istream& ist)
+{
+    string buf;
+    vector<string> result;
+    std::getline(ist, buf);
+    std::istringstream iss(buf);
+    std::copy(std::istream_iterator<string>(iss), 
+              std::istream_iterator<string>(),
+              std::back_inserter(result));
 	return result;
-} 
-/*
-void printVector(vector<string>& vec)
-{
-	for (string s: vec)
-    	cout << s << " ";
-	cout << "\n";
-}
-*/
-map<string, map<string, double>> readMatrix(vector<string>& states,
-									vector<string>& header, std::istream& ist)
-{
-	map<string, map<string, double>> m;
-	for (int i = 0; i < states.size(); i++)
-	{
-		vector<string> buf = parseLine(ist);
-
-		for (int j = 1; j <= header.size(); j++)
-		{
-			m[buf[0]][header[j-1]] = double{ stod(buf[j]) };
-		}
-		buf.clear();
-	}
-	return m;
 }
 
-double calcPathProb(string& str, string& path, map<string, map<string, double>>& m)
+void HMM::readMatrix(std::istream& ist)
+{
+    vector<string> header = parseLine(ist);
+    for (int i = 0; i < states.size(); ++i)
+    {
+        vector<string> buf = parseLine(ist);
+        for (int j = 1; j <= header.size(); ++j)
+        {
+            Emission[buf[0]][header[j-1]] = stod(buf[j]);
+        }
+        buf.clear();
+    }
+}
+
+double HMM::calcPathProb()
 {
     double prob = 1.0;
-    for (int i = 0; i < str.size(); i++)
+    for (int i = 0; i < String.size(); ++i)
     {
-        prob *= m[path.substr(i,1)][str.substr(i,1)];
-        
+        prob *= Emission[Path.substr(i,1)][String.substr(i,1)];
     }
-	return prob;
+    return prob;
 }
 
 int main()
 {
-	ifstream ist{"rosalind_ba10b.txt"};
-	if (!ist) 
-	{
-		cout << "Cannot open input file!\n";
-		exit(1);
-	}
+    std::ifstream ist{INFILENAME};
+    if (!ist) 
+    {
+        std::cerr << "Cannot open input file!\n";
+        exit(1);
+    }
+    std::ofstream ost{OUTFILENAME};
+    if (!ost) 
+    {
+        std::cerr << "Cannot open output file!\n";
+        exit(1);
+    }
 
-    string str;
-    getline(ist, str);
+    HMM model(ist);
+    ost.precision(12);
+    ost << model.calcPathProb() << '\n';
 
-    ist.ignore(numeric_limits<streamsize>::max(), '\n');
-
-    vector<string> alphabet = parseLine(ist);
-
-    ist.ignore(numeric_limits<streamsize>::max(), '\n');
-
-	string path;
-	getline(ist, path);
-
-	ist.ignore(numeric_limits<streamsize>::max(), '\n');
-
-	vector<string> states = parseLine(ist);
-
-	ist.ignore(numeric_limits<streamsize>::max(), '\n');
-
-	vector<string> header = parseLine(ist);
-	map<string, map<string, double>> emissions = readMatrix(states, header, ist);
-
-	cout.precision(12);
-	cout << calcPathProb(str, path, emissions) <<"\n";
-	return 0;
+    return 0;
 }
