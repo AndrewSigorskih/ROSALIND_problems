@@ -11,19 +11,19 @@ using std::vector;
 const char* INFILENAME = "rosalind_ba10c.txt";
 const char* OUTFILENAME = "out.txt";
 long int STR_MAX = std::numeric_limits<std::streamsize>::max();
-using Matrix = std::unordered_map<string, std::unordered_map<string, double>>;
+using Matrix =  std::unordered_map<string, double>;
 
 class HMM
 {
-    string String;
     string Path;
+    string String;
     vector<string> alphabet;
     vector<string> states;
     Matrix Transition;
     Matrix Emission;
 
     vector<string> parseLine(std::istream& ist);
-    void readMatrix(std::istream& ist, const char mat);
+    void readMatrix(std::istream& ist, Matrix& mat);
 
 public:
     HMM(std::istream& ist);
@@ -33,16 +33,15 @@ public:
 
 HMM::HMM(std::istream& ist)
 {
-    Path = "";
     std::getline(ist, String);
     ist.ignore(STR_MAX, '\n'); // ignoring "------"
     alphabet = parseLine(ist);
     ist.ignore(STR_MAX, '\n');
     states = parseLine(ist);
     ist.ignore(STR_MAX, '\n'); 
-    readMatrix(ist, 'T');
+    readMatrix(ist, Transition);
     ist.ignore(STR_MAX, '\n'); 
-    readMatrix(ist, 'E');
+    readMatrix(ist, Emission);
 }
 
 vector<string> HMM::parseLine(std::istream& ist)
@@ -57,34 +56,20 @@ vector<string> HMM::parseLine(std::istream& ist)
 	return result;
 }
 
-void HMM::readMatrix(std::istream& ist, const char mat)
+void HMM::readMatrix(std::istream& ist, Matrix& mat)
 {
-    Matrix* m;
-    switch (mat)
-    {
-        case 'T':
-            m = &Transition;
-            break;
-        case 'E':
-            m = &Emission;
-            break;
-        default:
-            std::cerr << "HMM::readMatrix got incorrect matrix type arg: ";
-            std::cerr << mat << '\n';
-            exit(1);
-    }
-
     vector<string> header = parseLine(ist);
     for (int i = 0; i < states.size(); ++i)
     {
         vector<string> buf = parseLine(ist);
         for (int j = 1; j <= header.size(); ++j)
         {
-            (*m)[buf[0]][header[j-1]] = stod(buf[j]);
+            mat[buf[0] + header[j-1]] = stod(buf[j]);
         }
         buf.clear();
     }
 }
+
 // https://en.wikipedia.org/wiki/Viterbi_algorithm
 void HMM::Viterbi()
 {
@@ -92,59 +77,52 @@ void HMM::Viterbi()
         Path.clear();
     // TState stores the probability of the most likely path so far
     // TIndex stores previous state of the most likely path so far
-    vector<vector<int>> TIndex(states.size(), vector<int>(String.size()));
-    vector<vector<double>> TState(states.size(), vector<double>(String.size()));
+    vector<vector<int>> TIndex(String.size(), vector<int>(states.size()));
+    vector<vector<double>> TState(String.size(), vector<double>(states.size()));
     // init
     for (int j = 0; j < states.size(); ++j)
     {
-        TState[j][0] = (1.0 / states.size()) * Emission[states[j]][String.substr(0,1)]; 
-        TIndex[j][0] = 0;
+        TState[0][j] = (1.0 / states.size()) * Emission[states[j] + String[0]]; 
+        TIndex[0][j] = 0;
     }
+
     // fill tables
     for (int i = 1; i < String.size(); ++i)
     {
         for (int j = 0; j < states.size(); ++j)
         {
-            // argmax
-            int argmax = 0;
-            double prob = 0.0;
+            double em = Emission[states[j] + String[i]];
             for (int k = 0; k < states.size(); ++k)
             {
-                double curprob = TState[k][i-1] *\
-                                 Transition[states[k]][states[j]] *\
-                                 Emission[states[j]][String.substr(i,1)];
-                if (curprob > prob)
+                double prob = TState[i-1][k] * em * Transition[states[k] + states[j]];
+                if (prob > TState[i][j])
                 {
-                    argmax = k;
-                    prob = curprob;
+                    TState[i][j] = prob;
+                    TIndex[i][j] = k;
                 }
             }
-            TIndex[j][i] = argmax;
-            TState[j][i] = TState[TIndex[j][i]][i-1] *\
-                            Transition[states[argmax]][states[j]] *\
-                            Emission[states[j]][String.substr(i,1)];
+
         }
     }
     // decode path
     int argmax = 0;
     for (int k = 1; k < states.size(); ++k)
     {
-        if (TState[k][String.size()-1] > TState[argmax][String.size()-1])
+        if (TState[String.size()-1][k] > TState[String.size()-1][argmax])
             argmax = k;
     }
-
     vector<int> tmp(String.size());
     tmp[String.size()-1] = argmax;
     for (int i = String.size()-1; i >= 1; --i)
     {
-        tmp[i-1] = TIndex[tmp[i]][i];
+        tmp[i-1] = TIndex[i][tmp[i]];
     }
     // create string
     for (int i = 0; i < tmp.size(); ++i)
     {
         Path += states[tmp[i]];
     }
-}
+}  
 
 string HMM::getPath()
 {
