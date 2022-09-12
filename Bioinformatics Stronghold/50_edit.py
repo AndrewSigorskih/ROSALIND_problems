@@ -1,32 +1,31 @@
-from functools import lru_cache
+# dynamic programming approach
+import numpy as np
 from Bio import SeqIO
+from itertools import product
 
-import sys
-sys.setrecursionlimit(10_000)
-
-def levenstein_distance(a, b):
+def edit_distance(s1: str, s2: str) -> int:
+    m = len(s1)
+    n = len(s2)
+    tab = np.zeros(shape=(m+1, n+1), dtype=int)
+    # fill table
+    for i in range(m+1):
+        tab[i, 0] = i
+    for j in range(n+1):
+        tab[0, j] = j
+    for i, j in product(range(1, m+1), range(1, n+1)):
+        if s1[i-1] == s2[j-1]:
+            cost = 0
+        else:
+            cost = 1
+        tab[i][j] = min(tab[i-1, j] + 1,
+                        tab[i, j-1] + 1,
+                        tab[i-1, j-1] + cost)
+    return tab[m][n]
     
-    @lru_cache(None)  # for memorization
-    def min_dist(s1, s2):
-        if s1 == len(a) or s2 == len(b):
-            return len(a) - s1 + len(b) - s2
-
-        # no change required
-        if a[s1] == b[s2]:
-            return min_dist(s1 + 1, s2 + 1)
-
-        return 1 + min(
-            min_dist(s1, s2 + 1),      # insert character
-            min_dist(s1 + 1, s2),      # delete character
-            min_dist(s1 + 1, s2 + 1),  # replace character
-        )
-
-    return min_dist(0, 0)
-
 def main():
     seq1, seq2 = (x.seq for x in SeqIO.parse("rosalind_edit.txt", "fasta"))
     with open("out.txt", "w") as o:
-        print(levenstein_distance(seq1, seq2), file=o)
+        print(edit_distance(seq1, seq2), file=o)
 
 if __name__ == "__main__":
     main()
