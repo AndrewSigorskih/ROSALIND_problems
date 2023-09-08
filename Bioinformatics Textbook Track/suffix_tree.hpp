@@ -10,6 +10,7 @@ struct _suffix_tree_edge {
     _suffix_tree_node* target_node;
     _suffix_tree_edge(size_t i, size_t j, _suffix_tree_node* target) : 
         start_pos(i), end_pos(j), target_node(target) {}
+    size_t length() { return end_pos - start_pos; }
 };
 
 using _edges_dict = std::unordered_map<char, _suffix_tree_edge*>;
@@ -25,6 +26,7 @@ struct _suffix_tree_node {
     _suffix_tree_edge* get_edge(char c);
     void set_default(_suffix_tree_edge* edge) { this->default_map_value = edge; }
     void set_parent(_suffix_tree_node* node) { this->parent = node; }
+    bool isTerminal() { return this->edges.size() == 0; }
 };
 
 class suffix_tree {
@@ -32,8 +34,10 @@ public:
     suffix_tree(const std::string&);
     ~suffix_tree();
     void get_edges(std::ofstream& ost, _suffix_tree_node* node = nullptr);
+    void lrep(std::ofstream& ost);
 private:
     _suffix_tree_node* build_tree(_suffix_tree_node* node, size_t n, size_t size, size_t skip = 0);
+    void lrep_traverse(_suffix_tree_node*, size_t, size_t&, size_t&);
     void destroy_node(_suffix_tree_node* node);
 private:
     size_t infty;

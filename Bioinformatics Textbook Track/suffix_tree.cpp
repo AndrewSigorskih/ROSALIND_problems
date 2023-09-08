@@ -99,9 +99,41 @@ void suffix_tree::get_edges(std::ofstream& ost, _suffix_tree_node* node)
         node = this->root;
     for (const auto [key, edge]: node->edges)
     {
-        size_t substr_len = edge->end_pos - edge->start_pos;
+        size_t substr_len = edge->length();
         ost.write(this->_text.c_str()+edge->start_pos, substr_len);
         ost << '\n';
         this->get_edges(ost, edge->target_node);
+    }
+}
+
+void suffix_tree::lrep(std::ofstream& ost)
+{
+    size_t maxHeight = 0, substrStart = 0;
+    this->lrep_traverse(root, 0, maxHeight, substrStart);
+    ost.write(this->_text.c_str()+substrStart, maxHeight);
+    ost << '\n';
+}
+
+void suffix_tree::lrep_traverse(_suffix_tree_node* node,
+                                size_t currHeight,
+                                size_t& maxHeight,
+                                size_t& suffixIndex)
+{
+    if (!node) return;
+
+    for (const auto [key, edge]: node->edges)
+    {
+        size_t substr_len = edge->length();
+
+        if (edge->target_node->isTerminal())
+        {
+            if (maxHeight < currHeight)
+            {
+                maxHeight = currHeight;
+                suffixIndex = this->_text.size() - currHeight - substr_len;
+            }
+        } else {
+            lrep_traverse(edge->target_node, currHeight + substr_len, maxHeight, suffixIndex);
+        }
     }
 }
