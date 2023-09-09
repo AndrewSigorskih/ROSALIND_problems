@@ -106,6 +106,8 @@ void suffix_tree::get_edges(std::ofstream& ost, _suffix_tree_node* node)
     }
 }
 
+// Longest repeat in a string
+
 void suffix_tree::lrep(std::ofstream& ost)
 {
     size_t maxHeight = 0, substrStart = 0;
@@ -136,4 +138,58 @@ void suffix_tree::lrep_traverse(_suffix_tree_node* node,
             lrep_traverse(edge->target_node, currHeight + substr_len, maxHeight, suffixIndex);
         }
     }
+}
+
+// Longest common substring of 2 concatenated strings
+
+void suffix_tree::lcs(std::ofstream& ost, size_t first_size)
+{
+    lcsHelper helper;
+    helper.firstSize = first_size;
+    std::ignore = this->lcs_traverse(root, 0, helper);
+    ost.write(this->_text.c_str()+helper.substrStart, helper.maxHeight);
+    ost << '\n';
+}
+
+lcsLabel suffix_tree::lcs_traverse(_suffix_tree_node* node,
+                                   size_t currHeight,
+                                   lcsHelper& helper)
+{
+    // only used for leaves
+    size_t suffIndex = this->_text.size() - currHeight;
+
+    if (!node->isTerminal())
+    { // internal node, recursively calculate children status
+        for (const auto [key, edge]: node->edges)
+        {
+            size_t substr_len = edge->length();
+            lcsLabel childLabel = lcs_traverse(edge->target_node,
+                                                currHeight + substr_len,
+                                                helper);
+            lcsLabel currLabel = helper.map[node];
+            if (currLabel == lcsLabel::UNKNOWN)
+            {
+                helper.map[node] = childLabel;
+            } else if (
+                ((currLabel == lcsLabel::FIRST) && (childLabel == lcsLabel::SECOND)) ||\
+                ((currLabel == lcsLabel::SECOND) && (childLabel == lcsLabel::FIRST)) ||\
+                (currLabel == lcsLabel::BOTH)
+            ) {
+                helper.map[node] = lcsLabel::BOTH;
+                // remember deepest node
+                if (helper.maxHeight < currHeight)
+                {
+                    helper.maxHeight = currHeight;
+                    helper.substrStart = edge->start_pos - currHeight;
+                }
+            }
+        }
+    } else if (suffIndex < helper.firstSize) {
+        // leaf, mark parent as first sequence
+        return lcsLabel::FIRST;
+    } else if (suffIndex >= helper.firstSize) {
+        // leaf, mark parent as second sequence
+        return lcsLabel::SECOND;
+    }
+    return helper.map[node];
 }
