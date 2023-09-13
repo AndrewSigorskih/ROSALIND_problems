@@ -188,8 +188,8 @@ void suffix_tree::lcs(std::ofstream& ost, size_t first_size)
 }
 
 void suffix_tree::lcs_traverse(_suffix_tree_node* node,
-                                 _lcsHelper& helper,
-                                 size_t currHeight)
+                               _lcsHelper& helper,
+                               size_t currHeight)
 {
     if (helper.map[node] != nodeColor::BOTH)
         return;
