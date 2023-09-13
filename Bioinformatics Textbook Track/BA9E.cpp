@@ -1,5 +1,5 @@
 #include "suffix_tree.hpp"
-
+// g++ -o ba9e suffix_tree.cpp BA9E.cpp
 const char* INFILENAME = "rosalind_ba9e.txt";
 const char* OUTFILENAME = "out.txt";
 

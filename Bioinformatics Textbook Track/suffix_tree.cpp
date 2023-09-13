@@ -106,6 +106,41 @@ void suffix_tree::get_edges(std::ofstream& ost, _suffix_tree_node* node)
     }
 }
 
+nodeColor suffix_tree::color_tree(_suffix_tree_edge* edge,
+                                  _color_dict& colorMap,
+                                  size_t firstSize)
+{
+    _suffix_tree_node* node = edge->target_node;
+    if (!node->isTerminal())
+    { // internal node, recursively calculate children status
+        for (const auto [key, child_edge]: node->edges)
+        {
+            nodeColor child_color = color_tree(child_edge,
+                                               colorMap,
+                                               firstSize);
+            nodeColor curr_color = colorMap[node];
+            if (curr_color == nodeColor::UNKNOWN)
+            {
+                colorMap[node] = child_color;
+            } else if (
+                ((curr_color == nodeColor::FIRST) && (child_color == nodeColor::SECOND)) ||\
+                ((curr_color == nodeColor::SECOND) && (child_color == nodeColor::FIRST)) ||\
+                (child_color == nodeColor::BOTH)
+            ) {
+                colorMap[node] = nodeColor::BOTH;
+            }
+        }
+
+    } else if (edge->start_pos <= firstSize){
+      // leaf, first sequence
+        colorMap[node] = nodeColor::FIRST;
+    } else if (edge->start_pos > firstSize) {
+      // leaf, second sequence
+      colorMap[node] = nodeColor::SECOND;
+    }
+    return colorMap[node];
+}
+
 // Longest repeat in a string
 
 void suffix_tree::lrep(std::ofstream& ost)
@@ -144,52 +179,27 @@ void suffix_tree::lrep_traverse(_suffix_tree_node* node,
 
 void suffix_tree::lcs(std::ofstream& ost, size_t first_size)
 {
-    lcsHelper helper;
+    _lcsHelper helper;
     helper.firstSize = first_size;
-    std::ignore = this->lcs_traverse(root, 0, helper);
+    std::ignore = this->color_tree(this->joker_edge, helper.map, first_size);
+    this->lcs_traverse(root, helper, 0);
     ost.write(this->_text.c_str()+helper.substrStart, helper.maxHeight);
     ost << '\n';
 }
 
-lcsLabel suffix_tree::lcs_traverse(_suffix_tree_node* node,
-                                   size_t currHeight,
-                                   lcsHelper& helper)
+void suffix_tree::lcs_traverse(_suffix_tree_node* node,
+                                 _lcsHelper& helper,
+                                 size_t currHeight)
 {
-    // only used for leaves
-    size_t suffIndex = this->_text.size() - currHeight;
-
-    if (!node->isTerminal())
-    { // internal node, recursively calculate children status
-        for (const auto [key, edge]: node->edges)
+    if (helper.map[node] != nodeColor::BOTH)
+        return;
+    for (const auto [key, child_edge]: node->edges)
+    {
+        lcs_traverse(child_edge->target_node, helper, currHeight+child_edge->length());
+        if (helper.maxHeight < currHeight)
         {
-            size_t substr_len = edge->length();
-            lcsLabel childLabel = lcs_traverse(edge->target_node,
-                                                currHeight + substr_len,
-                                                helper);
-            lcsLabel currLabel = helper.map[node];
-            if (currLabel == lcsLabel::UNKNOWN)
-            {
-                helper.map[node] = childLabel;
-            } else if (
-                ((currLabel == lcsLabel::FIRST) && (childLabel == lcsLabel::SECOND)) ||\
-                ((currLabel == lcsLabel::SECOND) && (childLabel == lcsLabel::FIRST)) ||\
-                (currLabel == lcsLabel::BOTH)
-            ) {
-                helper.map[node] = lcsLabel::BOTH;
-                // remember deepest node
-                if (helper.maxHeight < currHeight)
-                {
-                    helper.maxHeight = currHeight;
-                    helper.substrStart = edge->start_pos - currHeight;
-                }
-            }
+            helper.maxHeight = currHeight;
+            helper.substrStart = child_edge->start_pos - currHeight;
         }
-    } else if (suffIndex < helper.firstSize) {
-        // leaf, mark parent as first sequence
-        return lcsLabel::FIRST;
-    } else if (suffIndex >= helper.firstSize) {
-        // leaf, mark parent as second sequence
-        return lcsLabel::SECOND;
     }
-    return helper.map[node];
 }

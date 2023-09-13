@@ -4,6 +4,14 @@
 #include <unordered_map>
 #include <vector>
 
+enum class nodeColor
+{
+    UNKNOWN = 0,
+    FIRST,
+    SECOND,
+    BOTH
+};
+
 struct _suffix_tree_node;
 struct _suffix_tree_edge {
     size_t start_pos, end_pos;
@@ -14,19 +22,12 @@ struct _suffix_tree_edge {
 };
 
 using _edges_dict = std::unordered_map<char, _suffix_tree_edge*>;
+using _color_dict = std::unordered_map<_suffix_tree_node*, nodeColor>;
 
-enum lcsLabel
-{
-    UNKNOWN = 0,
-    FIRST,
-    SECOND,
-    BOTH
-};
-
-struct lcsHelper
+struct _lcsHelper
 {
     size_t firstSize, maxHeight = 0, substrStart = 0;
-    std::unordered_map<_suffix_tree_node*, lcsLabel> map;
+    _color_dict map;
 };
 
 struct _suffix_tree_node {
@@ -52,9 +53,11 @@ public:
     void lcs(std::ofstream& ost, size_t first_size);
 private:
     _suffix_tree_node* build_tree(_suffix_tree_node* node, size_t n, size_t size, size_t skip = 0);
-    void lrep_traverse(_suffix_tree_node*, size_t, size_t&, size_t&);
-    lcsLabel lcs_traverse(_suffix_tree_node*, size_t, lcsHelper&);
+    nodeColor color_tree(_suffix_tree_edge* edge, _color_dict& map, size_t firstSize);
     void destroy_node(_suffix_tree_node* node);
+    
+    void lrep_traverse(_suffix_tree_node*, size_t, size_t&, size_t&);
+    void lcs_traverse(_suffix_tree_node* node, _lcsHelper& helper, size_t currHeight);
 private:
     size_t infty;
     std::string _text;
