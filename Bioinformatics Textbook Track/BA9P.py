@@ -10,27 +10,21 @@ class Color(Enum):
     BLUE = 2
     PURPLE = 3
 
-    @classmethod
-    def string_to_color(self, color: str):
-        if (color == 'red'):
-            return self.RED
-        elif (color == 'blue'):
-            return self.BLUE
-        else:
-            raise ValueError(f'Unknown color value: {color}')
-        
-    @classmethod
-    def color_to_string(self, color):
-        if (color == self.GREY):
-            return 'grey'
-        elif (color == self.RED):
-            return 'red'
-        elif (color == self.BLUE):
-            return 'blue'
-        elif (color == self.PURPLE):
-            return 'purple'
-        else:
-            raise ValueError(f'Unknown color value: {color}')
+    def __str__(self) -> str:
+        return self.name.lower()
+    
+COLOR_MAPPING = {
+    'red': Color.RED,
+    'blue': Color.BLUE,
+    'purple': Color.PURPLE,
+    'grey': Color.GREY
+}
+
+def string_to_color(s: str) -> Color:
+    if s not in COLOR_MAPPING:
+        raise ValueError(f'Unknown color value: {s}')
+    return COLOR_MAPPING[s]
+
 
 @dataclass
 class Node:
@@ -55,7 +49,7 @@ class Graph:
 
     def set_color(self, id: str, color: str) -> None:
         id = int(id)
-        self.colors[id] = Color.string_to_color(color)
+        self.colors[id] = string_to_color(color)
 
     def tree_coloring(self) -> None:
         grey_nodes = [node.id for node in self.nodes 
@@ -80,22 +74,21 @@ class Graph:
         
     def print_colors(self, file):
         for node in self.nodes:
-            color = Color.color_to_string(self.colors[node.id])
-            print(f'{node.id}: {color}', file=file)
+            print(f'{node.id}: {self.colors[node.id]}', file=file)
 
 def main():
 
-    g = Graph()
+    graph = Graph()
     with open('rosalind_ba9p.txt', 'r') as f:
         while (line := f.readline().strip()) != '-':
             node, _, children = line.split()
-            g.add_node(node, children)
+            graph.add_node(node, children)
         while (line := f.readline().strip()):
             node, color = line.split(': ')
-            g.set_color(node, color)
-    g.tree_coloring()
+            graph.set_color(node, color)
+    graph.tree_coloring()
     with open('out.txt', 'w') as f:
-        g.print_colors(f)
+        graph.print_colors(f)
 
 if __name__ == '__main__':
     main()
