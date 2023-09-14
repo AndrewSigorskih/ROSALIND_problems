@@ -1,4 +1,5 @@
 #include "suffix_array.hpp"
+#include <cstring>
 
 suffix_array::suffix_array(const std::string& text)
 {
@@ -63,4 +64,50 @@ void suffix_array::print_array(std::ofstream& ost)
     for (size_t i = 0; i < n - 1; ++i)
         ost << this->array[i] << ", ";
     ost << this->array[n-1] << "\n";
+}
+
+void suffix_array::all_matches(const std::string& pat, std::vector<size_t>& result)
+{
+    size_t minIdx = 0, maxIdx = this->text.size();
+
+    while (minIdx < maxIdx)
+    {
+        size_t midIdx = (minIdx + maxIdx) >> 1;
+        if (
+            strncmp(
+                pat.c_str(), 
+                this->text.c_str() + this->array[midIdx],
+                pat.size()
+            ) > 0
+        ) {
+            minIdx = midIdx + 1;
+        } else {
+            maxIdx = midIdx;
+        }
+    }
+    size_t first = minIdx;
+    maxIdx = this->text.size();
+    while (minIdx < maxIdx)
+    {
+        size_t midIdx = (minIdx + maxIdx) >> 1;
+        if (
+            strncmp(
+                pat.c_str(), 
+                this->text.c_str() + this->array[midIdx],
+                pat.size()
+            ) < 0
+        ) {
+            maxIdx = midIdx;
+        } else {
+            minIdx = midIdx + 1;
+        }
+    }
+    size_t last = maxIdx;
+    if (first > last)
+    {
+        return;
+    } else {
+        for (size_t i = first; i < last; ++i)
+            result.push_back(this->array[i]);
+    }
 }

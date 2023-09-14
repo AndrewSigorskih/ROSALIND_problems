@@ -24,6 +24,7 @@ class suffix_array
 public:
     suffix_array(const std::string&);
     void print_array(std::ofstream&);
+    void all_matches(const std::string&, std::vector<size_t>&);
 private:
     void build_array();
 private:

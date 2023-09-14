@@ -24,8 +24,8 @@ Trie pattern matching|[BA9B](https://rosalind.info/problems/ba9b/)|[cpp](Bioinfo
 Suffix tree|[SUFF](https://rosalind.info/problems/suff/)<br>[BA9C](https://rosalind.info/problems/ba9c/)|[py](Bioinformatics-Stronghold/suffix_tree.py)<br>[header](Bioinformatics-Textbook-Track/suffix_tree.hpp) [cpp](Bioinformatics-Textbook-Track/suffix_tree.cpp) [main](Bioinformatics-Textbook-Track/BA9C.cpp)|Ukkonen's algorithm
 Longest Repeat in a String|[BA9D](https://rosalind.info/problems/ba9d/)|[cpp](Bioinformatics-Textbook-Track/BA9D.cpp)|
 Longest Shared Substring|[BA9E](https://rosalind.info/problems/ba9e/)|[cpp](Bioinformatics-Textbook-Track/BA9E.cpp)
-Suffix Array|[BA9G](https://rosalind.info/problems/ba9g/)|[header](Bioinformatics-Textbook-Track/suffix_array.hpp) [cpp](Bioinformatics-Textbook-Track/suffix_array.cpp) [main](Bioinformatics-Textbook-Track/BA9G.cpp)| O(n\*logn\*logn) implementation
-
+Suffix Array|[BA9G](https://rosalind.info/problems/ba9g/)|[header](Bioinformatics-Textbook-Track/suffix_array.hpp) [cpp](Bioinformatics-Textbook-Track/suffix_array.cpp) [main](Bioinformatics-Textbook-Track/BA9G.cpp)| O(n\*logn\*logn) construction
+Suffix Array Pattern Matching|[BA9H](https://rosalind.info/problems/ba9h/)|[cpp](Bioinformatics-Textbook-Track/BA9H.cpp)|All matches of all patterns
 
 ## Graph algorithms
 
