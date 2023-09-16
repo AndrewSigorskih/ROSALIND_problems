@@ -25,6 +25,7 @@ public:
     suffix_array(const std::string&);
     void print_array(std::ofstream&);
     void all_matches(const std::string&, std::vector<size_t>&);
+    const std::vector<size_t>& get_array() const { return this->array; }
 private:
     void build_array();
 private:

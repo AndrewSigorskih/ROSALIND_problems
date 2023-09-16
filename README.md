@@ -26,6 +26,8 @@ Longest Repeat in a String|[BA9D](https://rosalind.info/problems/ba9d/)|[cpp](Bi
 Longest Shared Substring|[BA9E](https://rosalind.info/problems/ba9e/)|[cpp](Bioinformatics-Textbook-Track/BA9E.cpp)
 Suffix Array|[BA9G](https://rosalind.info/problems/ba9g/)|[header](Bioinformatics-Textbook-Track/suffix_array.hpp) [cpp](Bioinformatics-Textbook-Track/suffix_array.cpp) [main](Bioinformatics-Textbook-Track/BA9G.cpp)| O(n\*logn\*logn) construction
 Suffix Array Pattern Matching|[BA9H](https://rosalind.info/problems/ba9h/)|[cpp](Bioinformatics-Textbook-Track/BA9H.cpp)|All matches of all patterns
+Burrows-Wheeler Transform of a String|[BA9I](https://rosalind.info/problems/ba9i/)|[header](Bioinformatics-Textbook-Track/bwt.hpp) [cpp](Bioinformatics-Textbook-Track/bwt.cpp) [main](Bioinformatics-Textbook-Track/BA9I.cpp)|Constructed using pre-computed suffix array
+Inverse Burrows-Wheeler Transform|[BA9J](https://rosalind.info/problems/ba9j/)|[cpp](Bioinformatics-Textbook-Track/BA9J.cpp)|
 
 ## Graph algorithms
 
