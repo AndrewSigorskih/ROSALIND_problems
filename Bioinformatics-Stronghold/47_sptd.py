@@ -1,13 +1,12 @@
-import warnings
-warnings.filterwarnings("ignore")
-#ete3 spams "is with a literal" warnings on import in high python versions
-from ete3 import Tree
+from Newick import Tree
 
 def main():
     with open("rosalind_sptd.txt", "r") as f:
-        _, s1, s2 = [line.strip("\n") for line in f]
-    (rf, max_rf, *junk) = Tree(s1).robinson_foulds(Tree(s2), unrooted_trees=True)
-    print(rf)
+        leaves, s1, s2 = [line.strip() for line in f]
+    leaves = {leaf:i for i, leaf in enumerate(leaves.split())}
+    t1, t2 = Tree(s1), Tree(s2)
+    with open('out.txt', 'w') as o:
+        print(Tree.rf_distance(t1, t2, leaves, unrooted=True), file=o)
 
 if __name__ == "__main__":
     main()

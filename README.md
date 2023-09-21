@@ -1,6 +1,6 @@
 # ROSALIND_problems
 
-This repository contains thi history of me getting a little bit better at programming while solving the [ROSALIND](https://rosalind.info/problems/locations/) challenge problems.
+This repository contains the history of me getting a little bit better at programming while solving the [ROSALIND](https://rosalind.info/problems/locations/) challenge problems.
 
 Links to some notable problems are grouped in tables below:
 
@@ -30,8 +30,8 @@ Suffix Array Pattern Matching|[BA9H](https://rosalind.info/problems/ba9h/)|[cpp]
 Burrows-Wheeler Transform of a String|[BA9I](https://rosalind.info/problems/ba9i/)|[header](Bioinformatics-Textbook-Track/bwt.hpp) [cpp](Bioinformatics-Textbook-Track/bwt.cpp) [main](Bioinformatics-Textbook-Track/BA9I.cpp)|Constructed using pre-computed suffix array
 Inverse Burrows-Wheeler Transform|[BA9J](https://rosalind.info/problems/ba9j/)|[cpp](Bioinformatics-Textbook-Track/BA9J.cpp)|
 Burrows-Wheeler Pattern Matching|[BA9N](https://rosalind.info/problems/ba9n/)|[cpp](Bioinformatics-Textbook-Track/BA9N.cpp)|
-Burrows-Wheeler Pattern Matching <br>Up To N Mismatches|[BA9O](https://rosalind.info/problems/ba9o/)|[cpp](Bioinformatics-Textbook-Track/BA9O.cpp)|
-Construct a Suffix Tree from a Suffix Array<br> And LCP Array|[BA9R](https://rosalind.info/problems/ba9r/)|[py](Bioinformatics-Textbook-Track/BA9R.py)| Another linear time suffix tree construction algorithm.
+Burrows-Wheeler Pattern Matching Up To N Mismatches|[BA9O](https://rosalind.info/problems/ba9o/)|[cpp](Bioinformatics-Textbook-Track/BA9O.cpp)|
+Construct a Suffix Tree from a Suffix Array And LCP Array|[BA9R](https://rosalind.info/problems/ba9r/)|[py](Bioinformatics-Textbook-Track/BA9R.py)| Another linear time suffix tree construction algorithm.
 
 ## Graph algorithms
 
@@ -51,4 +51,3 @@ Name|ROSALIND Problem|Solution|Notes
 ---|---|---|---
 UPGMA|[BA7D](https://rosalind.info/problems/ba7d/)|[header](Bioinformatics-Textbook-Track/BA7.h) [cpp](Bioinformatics-Textbook-Track/BA7D.cpp)|
 NJ|[BA7E](https://rosalind.info/problems/ba7d/)|[header](Bioinformatics-Textbook-Track/BA7.h) [cpp](Bioinformatics-Textbook-Track/BA7E.cpp)|
-
