@@ -2,29 +2,14 @@ import re
 import sys
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Dict, Iterator, List, Optional, Set, TextIO, Tuple, Union
+from typing import Dict, Iterator, List, Optional, TextIO, Tuple, Union
+
+from Branch import posToBits, bitsToPos, get_all_quartets
 
 NWK_REGEX = r"([^:;,()\s]*)(?:\s*:\s*([\d.]+)\s*)?([,);])|(\S)"
 Token = Union[str, int]
 
 # parsing inspired by: https://stackoverflow.com/a/51375562
-
-def posToBits(leaves: Tuple[int]) -> int:
-    res = 0
-    for i, l in enumerate(leaves):
-        if not l:
-            continue
-        mask = 1 << i
-        res |= mask
-    return res
-        
-def bitsToPos(bits: int, n: int) -> List[int]:
-    res = [0 for _ in range(n)]
-    for i in range(n):
-        mask = 1 << i
-        if (bits & mask):
-            res[i] = 1
-    return res
 
 @dataclass(slots=True)
 class Node:
@@ -129,15 +114,32 @@ class Tree:
         }
     
     @classmethod
-    def rf_distance(cls, t1: 'Tree',
+    def rf_distance(cls,
+                    t1: 'Tree',
                     t2: 'Tree',
                     leavesOrder: Dict[str, int],
                     unrooted: bool = False) -> int:
         substract = 3 if unrooted else 2
         br_1 = set(t1.to_branches(leavesOrder, unrooted).values())
         br_2 = set(t2.to_branches(leavesOrder, unrooted).values())
-        return 2*(len(leavesOrder) - substract) - 2*len(br_1 & br_2)
-
+        return 2*(len(leavesOrder) - substract) - 2*len(br_1 & br_2)    
+    
+    @classmethod
+    def qrt_distance_naive(cls,
+                     t1: 'Tree',
+                     t2: 'Tree',
+                     leavesOrder: Dict[str, int],
+                     unrooted: bool = False) -> int:
+        from math import comb
+        n = len(leavesOrder)
+        qrts_1, qrts_2 = set(), set()
+        for branch in t1.to_branches(leavesOrder, unrooted).values():
+            qrts_1 |= get_all_quartets(bitsToPos(branch, n))
+        print(f'{len(qrts_1)=}')
+        for branch in t2.to_branches(leavesOrder, unrooted).values():
+            qrts_2 |= get_all_quartets(bitsToPos(branch, n))
+        print(f'{len(qrts_1)=}')
+        return comb(n, 4) * 2 - len(qrts_1 & qrts_2) * 2
 
 class TreeGraph(Tree):
     def __init__(self, newick: Optional[str] = None):
@@ -221,23 +223,8 @@ if __name__ == '__main__':
     #g.print_tree()
     #print(g.leaves)
 
-    nwk = '(dog,cat);'
-    #nwk = "((A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5,G:0.8)F:0.9);"
+    nwk = "((A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5,G:0.8)F:0.9);"
     print(nwk)
     t = TreeGraph(nwk)
     t.print_tree()
-    print(t.get_distance('cat', 'dog'))
-
-    '''
-    leaves1 = (0, 0, 0, 1, 0, 1, 0)
-    leaves2 = (1, 0, 1, 0, 0, 1, 0)
-    n = len(leaves1)
-    a = posToBits(leaves1)
-    b = posToBits(leaves2)
-    print(f'{a:0>7b}')
-    print(f'{b:0>7b}')
-    print(f'{a|b:0>7b}')
-    print(f'{a&b:0>7b}')
-    print(bitsToPos(a, 7))
-    print(bitsToPos(b, 7))'''
-    
+    print(t.get_distance('A', 'C'))
